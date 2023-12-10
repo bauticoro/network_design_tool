@@ -28,7 +28,7 @@ It is recommended to use this tool after reading [Supply Chain Network Design Bo
 Once you have done that, you will find the first module of the Jupyter Notebook Script where you can manage the different parameters to work with.
 
 ### How to open a Jupyter Notebook
-1. Install the necessary programs by clicking [here](http://networkdesignbook.com/wp-content/uploads/2019/02/Steps-to-install-Python-Anaconda-and-PuLP-and-plotly-packages.pdf)
+1. Install the necessary programs by following [this steps](http://networkdesignbook.com/wp-content/uploads/2019/02/Steps-to-install-Python-Anaconda-and-PuLP-and-plotly-packages.pdf)
 2. To open Jupyter on Windows, go to the search bar at the bottom left and type in "Jupyter." You should see the Jupyter notebooks.
 3. Jupyter Notebooks will open in your browser.  Just navigate to the folder where you downloaded [IntegratedOptimization.ipynb](https://github.com/bauticoro/network_design_tool/blob/main/IntegratedOptimization.ipynb) and open them.
 4. The top of the notebook provides directions and shows you what to do. You should only need to manipulate data in the top block of code.
