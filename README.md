@@ -6,8 +6,8 @@ This is an open-source tool designed to support you in
 adding more intelligence power to operations wherever you go.
 
 
- This tool was created by Bautista Coronado, leveraging in 
- previous programs created by Michael Watson for educational 
+ This tool was created by [Bautista Coronado](https://www.linkedin.com/in/bautista-coronado/), leveraging in 
+ previous programs created by [Michael Watson](https://www.linkedin.com/in/michael-watson-07600a1/) for educational 
  purposes in the book [Supply Chain Network Design](http://networkdesignbook.com/).
  
 Infralast, in particular, is a result of our intention to
