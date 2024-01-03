@@ -1,4 +1,4 @@
-# Model_1. This model maximizes the percentage of demand within a distance
+# Model_3. This model minimizes the total weighted demand
 
 from pulp import *
 import time
@@ -6,9 +6,9 @@ import pandas as pd
 from network_design_tool import input_schema
 from network_design_tool import output_schema
 
-def maximize_demand_within_a_distance(dat):
+def minimize_total_weighted_demand(dat):
 
-    #Adapt dat input information from csvs in order to be able to be used in the optimization model
+        #Adapt dat input information from csvs in order to be able to be used in the optimization model
     high_service_dist_par = dict(zip(zip(dat.high_service_dist_par['Warehouse ID'],dat.high_service_dist_par['Customer ID']),dat.high_service_dist_par['Binary Value']))
     rates = dict(zip(zip(dat.rates['Origin'],dat.rates['Destination']),dat.rates['Rate']))
     maximum_dist_par = dict(zip(zip(dat.maximum_dist_par['Warehouse ID'],dat.maximum_dist_par['Customer ID']),dat.maximum_dist_par['Binary Value']))
@@ -45,9 +45,9 @@ def maximize_demand_within_a_distance(dat):
     """
     start_time=time.time()
 
-    # Create the 'prob' variable to contain the problem data
-    maximize_demand_within_a_distance = LpProblem ("maximize_demand_within_a_distance", LpMaximize)
 
+    # Create the 'prob' variable to contain the problem data
+    minimize_total_weighted_demand = LpProblem("minimize_total_weighted_demand", LpMinimize)
 
     """
     Decision variables are setted
@@ -60,12 +60,11 @@ def maximize_demand_within_a_distance(dat):
     if receive_from_only_one == "True":
         assign_vars = LpVariable.dicts("Assign", [(w,c) for w in warehouses for c in customers],0,1,LpInteger)
 
-
     """
     Objective variable is defined
     """
     # The objective function is added to 'prob' first
-    demand_within_distance = lpSum([high_service_dist_par[w,c] * flow_vars[w,c] for w in warehouses for c in customers])
+    total_weighted_demand_objective = lpSum([distance[w,c] * flow_vars[(w,c)] for w in warehouses for c in customers])
 
     """
     Restrictions are stablished
@@ -78,10 +77,9 @@ def maximize_demand_within_a_distance(dat):
     rhs – numerical value of constraint right hand side
     """
 
-
     # Ensures that all of a customer's demand is satisfied.
     for c in customers:
-        maximize_demand_within_a_distance += LpConstraint(
+        minimize_total_weighted_demand += LpConstraint(
                                         e = lpSum([flow_vars[w,c] for w in warehouses]),
                                         sense = LpConstraintEQ,
                                         name = str(c)+"_Served",
@@ -89,15 +87,14 @@ def maximize_demand_within_a_distance(dat):
 
     # Ensures that only one warehouse can be built in each location
     for w in warehouses:
-        maximize_demand_within_a_distance += LpConstraint(e = lpSum(facility_vars[w]),
+        minimize_total_weighted_demand += LpConstraint(e = lpSum(facility_vars[w]),
                                         sense=LpConstraintLE,
                                         name=str(w)+"_Fixed",
-                                        rhs = 1
-                                        )
+                                        rhs = 1)
 
     # Ensures that the number of warehouses constructed is the stablished at #number_of_whs
     if number_of_whs_constraint_active == "True":
-        maximize_demand_within_a_distance += LpConstraint(
+        minimize_total_weighted_demand += LpConstraint(
                                         e=lpSum([facility_vars[w] for w in warehouses]),
                                         sense=LpConstraintLE,
                                         name="_inTotal",
@@ -108,20 +105,17 @@ def maximize_demand_within_a_distance(dat):
         for w in warehouses:
             if capacity_constraint_active == "Capacity Specific for each Capacity":
                 warehouse_capacity = warehouses[w][6]
-            maximize_demand_within_a_distance += LpConstraint(
-                                        e = lpSum([flow_vars[w, c] for c in customers]) - warehouse_capacity * lpSum(facility_vars[w]),
+            minimize_total_weighted_demand += LpConstraint(e = lpSum([flow_vars[w, c] for c in customers]) - warehouse_capacity * lpSum(facility_vars[w]),
                                         sense = LpConstraintLE,
                                         name = str(w) + "_Capacity",
                                         rhs = 0)
 
     # Ensures that average service distance is within the given value
     if avg_service_distance_constraint_active == "True":
-        maximize_demand_within_a_distance += LpConstraint(
-                                        e = lpSum([distance[w,c] * flow_vars[w,c] for w in warehouses for c in customers]),
+        minimize_total_weighted_demand += LpConstraint(e = lpSum([distance[w,c] * flow_vars[w,c] for w in warehouses for c in customers]),
                                         sense=LpConstraintLE,
                                         name="_Avg_Served",
-                                        rhs=avg_service_dist * sum([customer_demands[c] for c in customers]))
-
+                                        rhs=avg_service_dist*sum([customer_demands[c] for c in customers]))
 
     # Ensures that a customer cannot be served from a warehouse which is farther than maximum distance value
     if maximum_distance_constraint_active == "True":
@@ -135,17 +129,24 @@ def maximize_demand_within_a_distance(dat):
 
     # Ensures that the cost of delivering goods is less or equal than the objective stablished at #total_cost
     if total_cost_constraint_active == "True":
-        maximize_demand_within_a_distance += LpConstraint(
+        minimize_total_weighted_demand += LpConstraint(
                                         e=lpSum([rates[w,c] * flow_vars[w,c] for w in warehouses for c in customers]),
                                         sense=LpConstraintLE,
                                         name="Total_Cost",
                                         rhs=total_cost)
 
+    # Ensures that a certain demand is within the service distance
+    if high_service_distance_constraint_active == "True":
+        minimize_total_weighted_demand += LpConstraint(e = lpSum([high_service_dist_par[w,c]*flow_vars[w,c] for w in warehouses for c in customers]),
+                                        sense = LpConstraintGE,
+                                        name = "_HighService_Served",
+                                        rhs = high_service_demand)
+
     # Ensures that a warehouse must be built for there to exist flow between a warehouse and a customer
     if receive_from_only_one == "False":
         for w in warehouses:
             for c in customers:
-                maximize_demand_within_a_distance += LpConstraint(
+                minimize_total_weighted_demand += LpConstraint(
                                             e = lpSum(flow_vars[w, c] - facility_vars[w] * customer_demands[c]),
                                             sense=LpConstraintLE,
                                             name=str(w) + "_" + str(c) + "_Route",
@@ -155,7 +156,7 @@ def maximize_demand_within_a_distance(dat):
     if receive_from_only_one == "True":
         # Ensures that only one flow is assigned to each assign_vars
         for c in customers:
-            maximize_demand_within_a_distance += LpConstraint(
+            minimize_total_weighted_demand += LpConstraint(
                                             e = lpSum([assign_vars[w, c] for w in warehouses]),
                                             sense=LpConstraintEQ,
                                             name=str(c) + "Only_One",
@@ -164,13 +165,13 @@ def maximize_demand_within_a_distance(dat):
 
         # Ensures that a warehouse must be built for there to exist flow between a warehouse and a customer
             for w in warehouses:
-                maximize_demand_within_a_distance += LpConstraint(
+                minimize_total_weighted_demand += LpConstraint(
                                             e = lpSum(assign_vars[w, c] - facility_vars[w]),
                                             sense=LpConstraintLE,
                                             name=str(w) + "_" + str(c) + "_Route",
                                             rhs=0
                                             )
-                maximize_demand_within_a_distance += LpConstraint(
+                minimize_total_weighted_demand += LpConstraint(
                                             e = lpSum(flow_vars[w,c] - assign_vars[w, c] * customer_demands[c]),
                                             sense=LpConstraintLE,
                                             name=str(w) + "_" + str(c) + "_Flow&Assign",
@@ -180,18 +181,18 @@ def maximize_demand_within_a_distance(dat):
     """
     Objective of the optimization is setted 
     """
-    # Setting problem objective
-    maximize_demand_within_a_distance.setObjective(demand_within_distance)
 
-    # The optimization data is written to an .lp file
-    maximize_demand_within_a_distance.writeLP("maximize_demand_within_a_distance.lp")
+    # Setting problem objective
+    minimize_total_weighted_demand.setObjective(total_weighted_demand_objective)
+
+    #The problem data is written to an .lp file
+    minimize_total_weighted_demand.writeLP("minimize_total_weighted_demand.lp")
 
     # The problem is solved using PuLP's choice of Solver
     _solver = pulp.PULP_CBC_CMD(keepFiles=False,gapRel=0.00,timeLimit=120, msg=True)
-    maximize_demand_within_a_distance.solve(solver=_solver)
+    minimize_total_weighted_demand.solve(solver=_solver)
 
     end_time = time.time()
-
 
     """
     Results of the model are calculated 
@@ -208,10 +209,14 @@ def maximize_demand_within_a_distance(dat):
     total_cost = sum([rates[w,c]*flow_vars[w,c] for w in warehouses for c in customers])
 
     # Total distance is calculated, taking in account how many packages are delivered in each route
-    total_demand_distance = sum(distance[w,c]*flow_vars[w,c].varValue for c in customers for w in warehouses)
+    total_distance = sum(distance[w,c]*facility_vars[w].varValue for c in customers for w in warehouses)
 
     # Average distance for each delivery is calculated
-    actual_avg_service_dist = total_demand_distance / total_demand
+    actual_avg_service_dist = sum(distance[w,c]*flow_vars[w,c].varValue for c in customers for w in warehouses) / total_demand
+
+    # Average distance for each delivery is calculated
+    total_high_service_demand = sum(flow_vars[w, c].varValue * high_service_dist_par[w, c] for c in customers for w in warehouses)
+
 
     # Model running time is calculated
     time_diff = end_time - start_time
@@ -257,7 +262,7 @@ def maximize_demand_within_a_distance(dat):
             'Warehouse Lon' : warehouses[w][5],
             'Customers Lat' : customers[c][4],
             'Customers Lon': customers[c][5],
-            'Transportation Cost': flow_vars[(w,c)].varValue * customer_demands[c] * rates[w,c],
+            'Transportation Cost': flow_vars[(w,c)].varValue * rates[w,c],
             'Rates': rates[w,c],
             }
             customers_assignment.append(cust)
@@ -287,24 +292,26 @@ def maximize_demand_within_a_distance(dat):
     Outcome of the model is printed 
     """
     #Header is printed
-    print("\nMaximize Demand Within Distance Model")
+    print("\nMinimize Total Demand Distance Model")
 
     # The status of the solution is printed to the screen
-    print ("Status:", LpStatus[maximize_demand_within_a_distance.status])
-    #file.write('\nstatus:'+ LpStatus[maximize_demand_within_a_distance.status])
-    print("Optimization Status",LpStatus[maximize_demand_within_a_distance.status])
+    print ("Status:", LpStatus[minimize_total_weighted_demand.status])
+    #file.write('\nstatus:'+ LpStatus[minimize_total_weighted_demand.status])
+    print("Optimization Status",LpStatus[minimize_total_weighted_demand.status] )
 
     # With this line we assign a value to status. This is used at the unit test to understand the status of the engine and the result of the objective function
-    sln.status = LpStatus[maximize_demand_within_a_distance.status],round(value(maximize_demand_within_a_distance.objective)*100/total_demand,2)
+    sln.status = LpStatus[minimize_total_weighted_demand.status],round(value(minimize_total_weighted_demand.objective)*100/total_demand,2)
+
 
     # Results are printed to the screen
     print("Total Demand", total_demand)
     print("Total Cost: ", str(value(total_cost)))
-    print("Total Demand Distance",total_demand_distance)
+    print("Total Distance",total_distance)
     print("Average service distance: {0:.1f} ".format(actual_avg_service_dist),"km")
+    print("% of Demand within ",high_service_dist,"km: ",round(total_high_service_demand*100/total_demand,2),"%")
 
     # Main objective is printed
-    print("% of Demand within ",high_service_dist,"km: ",round(value(maximize_demand_within_a_distance.objective)*100/total_demand,2),"%")
+    print("Objective(Total Demand-Distance): ", value(minimize_total_weighted_demand.objective))
 
     # If include_distance_bands is True,  demand within each distance bands is printed
     if include_distance_bands == "True":
@@ -320,35 +327,6 @@ def maximize_demand_within_a_distance(dat):
     # Model running time is printed
     print("Run Time of model in seconds {:.1f}" .format(time_diff))
 
-    """
-    Outcome of the model is written in .txt file
-    
-    #Header is written
-    file.write('\n\nMaximize Demand Within Distance Model')
-
-    # Results are written
-    file.write("\nTotal Demand:"+ str(total_demand))
-    file.write("\nTotal Cost: "+ str(total_cost))
-    file.write("Total Demand Distance"+ str(total_demand_distance))
-    file.write("\nAverage service distance: "+str(actual_avg_service_dist)+"km")
-
-    # Main objective is written
-    file.write("\n% of Demand within "+str(high_service_dist)+"km: "+str(round(value(maximize_demand_within_a_distance.objective)*100/total_demand,2))+"%")
-
-    # If include_distance_bands is True, demand within each distance bands is written
-    if include_distance_bands == True:
-        percent_demand_distance_band_1 = sum(df_cu[df_cu['Distance']<distance_band_1]['Customer Demand'])*100/total_demand
-        percent_demand_distance_band_2 = sum(df_cu[df_cu['Distance']<distance_band_2]['Customer Demand'])*100/total_demand
-        percent_demand_distance_band_3 = sum(df_cu[df_cu['Distance']<distance_band_3]['Customer Demand'])*100/total_demand
-        percent_demand_distance_band_4 = sum(df_cu[df_cu['Distance']<distance_band_4]['Customer Demand'])*100/total_demand
-        file.write("\nPercent Demand served within {} miles : {:.1f}" .format(distance_band[0], percent_demand_distance_band_1))
-        file.write("\nPercent Demand served within {} miles : {:.1f}" .format(distance_band[1], percent_demand_distance_band_2))
-        file.write("\nPercent Demand served within {} miles : {:.1f}" .format(distance_band[2], percent_demand_distance_band_3))
-        file.write("\nPercent Demand served within {} miles : {:.1f}" .format(distance_band[3], percent_demand_distance_band_4))
-
-    # Model running time is written
-    file.write("\nRun Time of model in seconds {:.1f}" .format(time_diff))
-    """
     """
     Data is written in .csv file
     """

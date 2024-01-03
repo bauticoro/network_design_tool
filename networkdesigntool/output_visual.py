@@ -1,5 +1,5 @@
 # In this function, we are visualizaing the output data-- the data after the optimization has run
-from networkdesigntool import input_schema
+from network_design_tool import input_schema
 import pandas as pd
 import plotly
 

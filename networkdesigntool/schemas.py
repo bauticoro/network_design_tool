@@ -43,7 +43,7 @@ input_schema.add_parameter('High Service Demand (If constraint active)', default
 
 input_schema.add_parameter('Avg Service Distance Constraint', default_value='False', number_allowed=False,
                            strings_allowed=['True', 'False'])
-input_schema.add_parameter('Minimum Average Distance', default_value=1000, number_allowed=True, strings_allowed=(),
+input_schema.add_parameter('Maximum Average Distance', default_value=1000, number_allowed=True, strings_allowed=(),
                            must_be_int=False, min=0.0, inclusive_min=False, max=float('inf'), inclusive_max=False)
 
 input_schema.add_parameter('Max Distance Constraint', default_value='False', number_allowed=False,
@@ -81,8 +81,8 @@ input_schema.add_parameter('Output Map', default_value='False', number_allowed=F
 # region OUTPUT SCHEMA
 output_schema = PanDatFactory(
     opened_warehouses=[['Warehouse ID'], ['City', 'State', 'Zipcode', 'Lat', 'Lon', 'Total Demand to Warehouse']],
-    customer_assignment=[['Warehouse ID', 'Customer ID'], ['Customer Demand', 'Distance', 'Warehouse Lat', 'Warehouse Lon', 'Customer Lat', 'Customer Lon', 'Transportation Cost']]
-)
+    customer_assignment=[['Warehouse ID', 'Customer ID'], ['Customer Demand', 'Distance', 'Warehouse Lat', 'Warehouse Lon', 'Customer Lat', 'Customer Lon', 'Transportation Cost']],
+    status = [['Status'],['Result']])
 # endregion
 
 # region DATA TYPES AND PREDICATES - INPUT SCHEMA
@@ -215,5 +215,11 @@ output_schema.set_data_type(table=table, field='Customer Lon', number_allowed=Tr
                            must_be_int=False, min=-180, inclusive_min=True, max=180, inclusive_max=True)
 output_schema.set_data_type(table=table, field='Transportation Cost', number_allowed=True, strings_allowed=(),
                            must_be_int=True, min=0, inclusive_min=True, max=float('inf'), inclusive_max=False)
+# endregion
+
+# region status
+table = 'status'
+output_schema.set_data_type(table=table, field='Status', number_allowed=False, strings_allowed='*')
+output_schema.set_data_type(table=table, field='Result', number_allowed=False, strings_allowed='*')
 # endregion
 # endregion
