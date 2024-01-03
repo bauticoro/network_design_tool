@@ -32,4 +32,11 @@ Once you have done that, you will find the first module of the Jupyter Notebook 
 ### Legacy code
 In this github, you will find a Jupyter Notebook which is useful as the main optimization tool: [IntegratedOptimization.ipynb](https://github.com/bauticoro/network_design_tool/blob/main/legacy/IntegratedOptimization.ipynb)
 And you will find [data folder](https://github.com/bauticoro/network_design_tool/tree/main/legacy/data) which establishes the input data schema to make this tool work. 
-It is important not to change the first row of each file, nor the order of the columns.
+It is important not to change the first row of each file, nor the order of the columns.w
+
+---
+This tool is being built at this moment. Only two end points are validated to be used:
+- minimize_total_weighted_demand
+- maximize_demand_within_a_distance
+
+The rest of the endpoints are not ready to be used yet and don't have their unit test developed. Therefore, it is still not ready to be used.
