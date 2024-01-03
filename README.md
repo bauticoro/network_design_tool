@@ -35,7 +35,7 @@ And you will find [data folder](https://github.com/bauticoro/network_design_tool
 It is important not to change the first row of each file, nor the order of the columns.w
 
 ---
-This tool is being built at this moment. Only two end points are validated to be used:
+### This tool is being built at this moment. Only two end points are validated to be used:
 - minimize_total_weighted_demand
 - maximize_demand_within_a_distance
 
