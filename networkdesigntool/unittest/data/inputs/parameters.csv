@@ -1,0 +1,24 @@
+Name,Value
+Scenario Name,scenario_1
+Optimization Type,Maximize Demand Within Distance
+Capacity Constraint Type,No Constraint
+Every warehouse Capacity (If constraint is active),1000000
+Recieve from Only One,False
+High Service Distance-Demand Constraint,False
+High Service Distance,1000
+High Service Demand (If constraint active),1000
+Avg Service Distance Constraint,False
+Minimum Average Distance,1000
+Max Distance Constraint,True
+Maximum Distance,500
+Total Cost Constraint,False
+Maximum Cost,10000000
+Total Number of Warehouses,True
+Maximum Number of Warehouses,5
+Include Distance Bands,True
+Distance band 1,200
+Distance band 2,400
+Distance band 3,800
+Distance band 4,1600
+Input Map,False
+Output Map,False

@@ -1,7 +1,7 @@
 from pulp import *
 import time
 import pandas as pd
-from networkdesigntool import input_schema
+from network_design_tool import input_schema
 
 
 def prueba_optimizador (dat):

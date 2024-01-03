@@ -2,7 +2,7 @@
 # This function identifies the pars with distance higher than max service and assigns it a 0 value in maximum_dist_par.csv. The rest have a 1 assigned.
 #
 
-from networkdesigntool import input_schema
+from network_design_tool import input_schema
 
 def calculate_max_dist_par(dat):
 
