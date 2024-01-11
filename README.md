@@ -36,7 +36,8 @@ It is important not to change the first row of each file, nor the order of the c
 
 ---
 ### This tool is being built at this moment. Only two end points are validated to be used:
-- minimize_total_weighted_demand
+- minimize_total_weighted_demand (not totally validated)
 - maximize_demand_within_a_distance
+- minimize_total_distance
 
 The rest of the endpoints are not ready to be used yet and don't have their unit test developed. Therefore, it is still not ready to be used.
