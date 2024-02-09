@@ -1,11 +1,12 @@
 Metadata-Version: 2.1
 Name: network_design_tool
-Version: 0.1.0
+Version: 0.5.14
 Summary: Simple Network Design Tool
 Home-page: https://github.com/bauticoro/network_design_tool
 Author: Bautista Coronado
 Author-email: bauticoro@gmail.com
-Project-URL: Bug Tracker, -
+Project-URL: Homepage, https://github.com/bauticoro/network_design_tool
+Project-URL: Issues, https://github.com/bauticoro/network_design_tool/issues
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
@@ -13,4 +14,3 @@ Requires-Python: >=3.6
 Description-Content-Type: text/markdown
 Requires-Dist: ticdat>=0.2.21
 Requires-Dist: pandas>=0.18.1
-Requires-Dist: gurobipy==9.5.0
